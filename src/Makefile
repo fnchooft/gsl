@@ -35,11 +35,39 @@
 
 INSTALL = /usr/bin/install -c
 
+# Define version-variables here so they can be injected into files
+# using a autoconf-style -> version.h.in
+# using a autoconf-style -> pc.in
+GSL_PACKAGE    = gslgen
+GSL_VERSION    = 4.1
+GSL_PRODUCT    = GSL/4.1c
+GSL_COPYRIGHT  = Copyright (c) 1996-2016 iMatix Corporation
+GSL_BUILDDATE  = $(shell date -I)
+GSL_URL        = http://github.com/imatix/gsl.git
+GSL_BUILDMODEL = Built from $(GSL_URL) master
+
+#http://stackoverflow.com/questions/7281395/output-multiline-variable-to-a-file-with-gnu-make
+define SEDVARS
+s|@GSL_PACKAGE@|$(GSL_PACKAGE)|g
+s|@GSL_VERSION@|$(GSL_VERSION)|g
+s|@GSL_PRODUCT@|$(GSL_PRODUCT)|g
+s|@GSL_COPYRIGHT@|$(GSL_COPYRIGHT)|g
+s|@GSL_URL@|$(GSL_URL)|g
+s|@GSL_BUILDDATE@|$(GSL_BUILDDATE)|g
+s|@GSL_BUILDMODEL@|$(GSL_BUILDMODEL)|g
+endef
+export SEDVARS
+
+#Write all variables to a temporary variables.sed file
+variables.sed:
+	echo "$$SEDVARS" > variables.sed
+
 # Installation directories, good for Debian Packaging
 DESTDIR ?= /usr/local
 prefix = ${DESTDIR}
 mandir = ${prefix}/share/man/man8
 bindir = ${prefix}/bin
+pkgconfigdir = ${prefix}/share/pkgconfig
 
 # Default values for object, library, and executable extensions.
 #
@@ -67,7 +95,7 @@ export CCLIBS = -lpcre
 # Default rule -- all depends on everything.
 # We do this so that we can define the rule at the end.
 #
-all: everything
+all: everything pkgconfig-gen
 
 # debug build
 debug: DBG = -DDEBUG -g
@@ -191,9 +219,25 @@ code:
 headers:
 	cat gghead.h ggcomm.h ggpars.h ggparsm.h ggscrp.h ggscop.h ggobjt.h ggsymb.h gggsl.h ggcode.h ggcodem.h ggfile.h ggstrn.h ggenvt.h ggconv.h ggmath.h ggsock.h ggthrd.h ggxml.h ggtime.h ggpcre.h ggdiag.h ggproc.h > gsl.h
 
-install:
+# Copied from http://git.savannah.gnu.org/gitweb/?p=autoconf-archive.git;a=blob_plain;f=m4/ax_create_pkgconfig_info.m4
+version.h: version.h.in variables.sed
+	sed -f variables.sed $< > $@
+
+gslgen.pc: pc.in variables.sed
+	sed -f variables.sed $< > $@
+
+pkgconfig-gen: version.h gslgen.pc
+
+pkgconfig-clean:
+	rm -rf version.h gslgen.pc variables.sed
+
+
+install: pkgconfig-gen
 	$(INSTALL) -m 755 -d $(bindir)
 	$(INSTALL) -m 755 gsl $(bindir)
+	$(INSTALL) -m 755 -d $(pkgconfigdir)
+	$(INSTALL) -m 755 gslgen.pc $(pkgconfigdir)
 
-clean:
+
+clean: pkgconfig-clean
 	rm *.o *.a gsl

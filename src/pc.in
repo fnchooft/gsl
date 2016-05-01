@@ -1,0 +1,8 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+
+Name: @GSL_PACKAGE@
+Description: @GSL_COPYRIGHT@
+Version: @GSL_VERSION@
+URL: @GSL_URL@
