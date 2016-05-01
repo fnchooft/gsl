@@ -46,7 +46,7 @@
 #define VERSION         "4.1"
 #define PRODUCT         "GSL/4.1c"
 #define COPYRIGHT       "Copyright (c) 1996-2016 iMatix Corporation"
-#define BUILDDATE       "2016-04-30"
+#define BUILDDATE       "2016-05-01"
 #define BUILDMODEL      "Built from http://github.com/imatix/gsl.git master"
 #if defined (VERSION_EMBED)
 /*  Embed the version information in the resulting binary   */

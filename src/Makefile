@@ -95,7 +95,7 @@ export CCLIBS = -lpcre
 # Default rule -- all depends on everything.
 # We do this so that we can define the rule at the end.
 #
-all: everything pkgconfig-gen
+all: everything
 
 # debug build
 debug: DBG = -DDEBUG -g
@@ -216,7 +216,7 @@ everything: libgsl$(LIB) gsl$(EXE)
 code:
 	gsl -q ggconv.gxl ggdiag.gxl ggenvt.gxl ggfile.gxl gggsl.gxl ggmath.gxl ggpcre.gxl ggproc.gxl ggscrp.gxl ggsock.gxl ggstrn.gxl ggsymb.gxl ggthrd.gxl ggtime.gxl ggxml.gxl
 
-headers:
+headers: version.h
 	cat gghead.h ggcomm.h ggpars.h ggparsm.h ggscrp.h ggscop.h ggobjt.h ggsymb.h gggsl.h ggcode.h ggcodem.h ggfile.h ggstrn.h ggenvt.h ggconv.h ggmath.h ggsock.h ggthrd.h ggxml.h ggtime.h ggpcre.h ggdiag.h ggproc.h > gsl.h
 
 # Copied from http://git.savannah.gnu.org/gitweb/?p=autoconf-archive.git;a=blob_plain;f=m4/ax_create_pkgconfig_info.m4
@@ -224,15 +224,14 @@ version.h: version.h.in variables.sed
 	sed -f variables.sed $< > $@
 
 gslgen.pc: pc.in variables.sed
+	echo 's|@prefix@|$(DESTDIR)|g' >> variables.sed
 	sed -f variables.sed $< > $@
-
-pkgconfig-gen: version.h gslgen.pc
 
 pkgconfig-clean:
 	rm -rf version.h gslgen.pc variables.sed
 
 
-install: pkgconfig-gen
+install: gslgen.pc
 	$(INSTALL) -m 755 -d $(bindir)
 	$(INSTALL) -m 755 gsl $(bindir)
 	$(INSTALL) -m 755 -d $(pkgconfigdir)
